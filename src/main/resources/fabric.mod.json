@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "chineseime",
+	"version": "${version}",
+	"name": "Chinese IME",
+	"description": "A Minecraft mod that adds pinyin input for typing Chinese characters.",
+	"authors": [
+		"Dooji"
+	],
+	"contact": {
+		"homepage": "https://modrinth.com/project/chinese-ime",
+		"sources": "https://github.com/dooji2/chinese-ime"
+	},
+	"license": "GPL-v3",
+	"icon": "assets/chineseime/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.dooji.chineseime.ChineseIME"
+		]
+	},
+	"mixins": [
+		"chineseime.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.7",
+		"minecraft": "~1.19.2",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
