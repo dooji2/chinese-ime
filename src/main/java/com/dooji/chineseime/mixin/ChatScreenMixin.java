@@ -32,7 +32,17 @@ public class ChatScreenMixin {
 
             DrawableHelper.fill(matrices, buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, 0x80000000);
 
-            String buttonText = ConfigManager.isSimplifiedMode() ? "Simplified" : "Traditional";
+            String buttonText = "";
+
+            int languageMode = ConfigManager.getLanguageMode();
+            if (languageMode == 1) {
+                buttonText = "Simplified";
+            } else if (languageMode == 2) {
+                buttonText = "Traditional";
+            } else if (languageMode == 3) {
+                buttonText = "Cantonese";
+            }
+
             int textWidth = client.textRenderer.getWidth(buttonText);
 
             int textX = buttonX + (buttonWidth / 2) - (textWidth / 2);
@@ -51,9 +61,7 @@ public class ChatScreenMixin {
         int buttonX = width - 100;
         int buttonY = 10;
         if (mouseX >= buttonX && mouseX <= buttonX + 90 && mouseY >= buttonY && mouseY <= buttonY + 20) {
-            boolean isSimplified = !ConfigManager.isSimplifiedMode();
-            ConfigManager.setLanguageMode(isSimplified);
-            imeHandler.toggleLanguageMode(isSimplified);
+            imeHandler.toggleLanguageMode();
         }
     }
 

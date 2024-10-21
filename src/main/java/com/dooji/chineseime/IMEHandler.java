@@ -61,15 +61,23 @@ public class IMEHandler {
             if (chatField != null) {
                 String currentText = chatField.getText();
                 String lastPinyin = extractLastPinyin(currentText);
+
                 if (!lastPinyin.isEmpty()) {
-                    currentText = currentText.substring(0, currentText.length() - lastPinyin.length()) + suggestion;
+                    String pinyinPattern = "(?<=\\b|\\d)([a-zA-Z]+\\d?)$";
+
+                    if (currentText.matches(".*" + pinyinPattern)) {
+                        String newText = currentText.replaceFirst(pinyinPattern, suggestion);
+
+                        chatField.setText(newText);
+                    } else {
+                        chatField.setText(currentText + suggestion);
+                    }
+
+                    showSuggestions(List.of());
+                    updateSuggestionsBasedOnInput();
                 } else {
-                    currentText += suggestion;
+                    chatField.setText(currentText + suggestion);
                 }
-
-                chatField.setText(currentText);
-
-                updateSuggestionsBasedOnInput();
             }
         }
     }
@@ -102,39 +110,62 @@ public class IMEHandler {
             if (chatField != null) {
                 String currentText = chatField.getText();
 
-                if (currentText.startsWith("/")) {
+                if (currentText.startsWith("/") || currentText.endsWith(" ") || currentText.matches(".*[\u4e00-\u9fa5]+$")) {
                     showSuggestions(List.of());
+                    lastInput = currentText;
                     return;
                 }
 
-                if (currentText.endsWith(" ")) {
+                if (currentText.matches(".*\\s\\d$")) {
                     showSuggestions(List.of());
+                    lastInput = currentText;
                     return;
                 }
 
                 String lastPinyin = extractLastPinyin(currentText);
 
                 if (!currentText.equals(lastInput)) {
-                    lastInput = currentText;
-
-                    if (!lastPinyin.isEmpty()) {
-                        List<String> suggestions = PinyinDictionary.getChineseSuggestions(lastPinyin);
+                    List<String> suggestions = PinyinDictionary.getChineseSuggestions(lastPinyin);
+                    if (!suggestions.isEmpty()) {
                         showSuggestions(suggestions);
                     } else {
                         showSuggestions(List.of());
                     }
+                    lastInput = currentText;
                 }
             }
         }
     }
 
-    public void toggleLanguageMode(boolean isSimplifiedMode) {
-        PinyinDictionary.setLanguageMode(isSimplifiedMode);
-        ConfigManager.setLanguageMode(isSimplifiedMode);
+    public void toggleLanguageMode() {
+        int currentMode = ConfigManager.getLanguageMode();
+        int newMode;
+
+        if (currentMode == 1) {
+            newMode = 2;
+        } else if (currentMode == 2) {
+            newMode = 3;
+        } else {
+            newMode = 1;
+        }
+
+        ConfigManager.setLanguageMode(newMode);
+        PinyinDictionary.setLanguageMode(newMode);
     }
 
     private String extractLastPinyin(String input) {
-        String[] parts = input.split("[\u4e00-\u9fa5\\s]+");
-        return (parts.length > 0) ? parts[parts.length - 1] : "";
+        String[] parts = input.split("[^a-zA-Z0-9]+");
+
+        for (int i = parts.length - 1; i >= 0; i--) {
+            String part = parts[i];
+
+            part = part.replaceFirst("^\\d+", "");
+
+            if (part.matches("[a-zA-Z]+\\d?")) {
+                return part;
+            }
+        }
+
+        return "";
     }
 }

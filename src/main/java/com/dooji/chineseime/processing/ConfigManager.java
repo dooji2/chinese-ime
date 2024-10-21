@@ -16,7 +16,7 @@ public class ConfigManager {
     private static final String CONFIG_KEY_LANGUAGE_MODE = "languageMode";
     private static final Gson gson = new Gson();
     private static File configFile;
-    private static boolean isSimplified = true;
+    private static int languageMode = 1;
 
     public static void init() {
         File configDir = new File(MinecraftClient.getInstance().runDirectory, CONFIG_DIR);
@@ -33,12 +33,12 @@ public class ConfigManager {
         }
     }
 
-    public static boolean isSimplifiedMode() {
-        return isSimplified;
+    public static int getLanguageMode() {
+        return languageMode;
     }
 
-    public static void setLanguageMode(boolean simplifiedMode) {
-        isSimplified = simplifiedMode;
+    public static void setLanguageMode(int mode) {
+        languageMode = mode;
         saveConfig();
     }
 
@@ -46,7 +46,7 @@ public class ConfigManager {
         try (FileReader reader = new FileReader(configFile)) {
             JsonObject json = gson.fromJson(reader, JsonObject.class);
             if (json.has(CONFIG_KEY_LANGUAGE_MODE)) {
-                isSimplified = json.get(CONFIG_KEY_LANGUAGE_MODE).getAsBoolean();
+                languageMode = json.get(CONFIG_KEY_LANGUAGE_MODE).getAsInt();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -56,7 +56,7 @@ public class ConfigManager {
     private static void saveConfig() {
         try (FileWriter writer = new FileWriter(configFile)) {
             JsonObject json = new JsonObject();
-            json.addProperty(CONFIG_KEY_LANGUAGE_MODE, isSimplified);
+            json.addProperty(CONFIG_KEY_LANGUAGE_MODE, languageMode);
             gson.toJson(json, writer);
         } catch (IOException e) {
             e.printStackTrace();
