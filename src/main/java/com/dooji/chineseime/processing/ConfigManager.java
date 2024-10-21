@@ -1,7 +1,9 @@
 package com.dooji.chineseime.processing;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.client.MinecraftClient;
 
 import java.io.File;
@@ -45,8 +47,21 @@ public class ConfigManager {
     private static void loadConfig() {
         try (FileReader reader = new FileReader(configFile)) {
             JsonObject json = gson.fromJson(reader, JsonObject.class);
+
             if (json.has(CONFIG_KEY_LANGUAGE_MODE)) {
-                languageMode = json.get(CONFIG_KEY_LANGUAGE_MODE).getAsInt();
+                JsonElement languageModeElement = json.get(CONFIG_KEY_LANGUAGE_MODE);
+
+                if (languageModeElement.isJsonPrimitive()) {
+                    JsonPrimitive primitive = languageModeElement.getAsJsonPrimitive();
+
+                    if (primitive.isBoolean()) {
+                        boolean oldLanguageMode = primitive.getAsBoolean();
+                        languageMode = oldLanguageMode ? 1 : 2;
+                        saveConfig();
+                    } else if (primitive.isNumber()) {
+                        languageMode = primitive.getAsInt();
+                    }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -63,11 +63,10 @@ public class IMEHandler {
                 String lastPinyin = extractLastPinyin(currentText);
 
                 if (!lastPinyin.isEmpty()) {
-                    String pinyinPattern = "(?<=\\b|\\d)([a-zA-Z]+\\d?)$";
+                    String pinyinPattern = "([a-zA-Z]+\\d?)$";
 
                     if (currentText.matches(".*" + pinyinPattern)) {
                         String newText = currentText.replaceFirst(pinyinPattern, suggestion);
-
                         chatField.setText(newText);
                     } else {
                         chatField.setText(currentText + suggestion);
