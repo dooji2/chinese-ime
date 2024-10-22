@@ -5,6 +5,7 @@ import com.dooji.chineseime.IMEHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.ChatScreen;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,25 +26,24 @@ public class ChatScreenMixin {
             imeHandler.renderCustomSuggestions(matrices);
 
             int width = client.getWindow().getScaledWidth();
-            int buttonX = width - 100;
-            int buttonY = 10;
-            int buttonWidth = 90;
-            int buttonHeight = 20;
-
-            DrawableHelper.fill(matrices, buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, 0x80000000);
 
             String buttonText = "";
-
             int languageMode = ConfigManager.getLanguageMode();
             if (languageMode == 1) {
-                buttonText = "Simplified";
+                buttonText = I18n.translate("chineseime.language.simplified");
             } else if (languageMode == 2) {
-                buttonText = "Traditional";
+                buttonText = I18n.translate("chineseime.language.traditional");
             } else if (languageMode == 3) {
-                buttonText = "Cantonese";
+                buttonText = I18n.translate("chineseime.language.cantonese");
             }
 
             int textWidth = client.textRenderer.getWidth(buttonText);
+            int buttonWidth = textWidth + 20;
+            int buttonHeight = 20;
+            int buttonX = width - buttonWidth - 10;
+            int buttonY = 10;
+
+            DrawableHelper.fill(matrices, buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, 0x80000000);
 
             int textX = buttonX + (buttonWidth / 2) - (textWidth / 2);
             int textY = buttonY + (buttonHeight / 2) - (client.textRenderer.fontHeight / 2);
@@ -58,9 +58,23 @@ public class ChatScreenMixin {
 
         MinecraftClient client = MinecraftClient.getInstance();
         int width = client.getWindow().getScaledWidth();
-        int buttonX = width - 100;
+
+        String buttonText = "";
+        int languageMode = ConfigManager.getLanguageMode();
+        if (languageMode == 1) {
+            buttonText = I18n.translate("chineseime.language.simplified");
+        } else if (languageMode == 2) {
+            buttonText = I18n.translate("chineseime.language.traditional");
+        } else if (languageMode == 3) {
+            buttonText = I18n.translate("chineseime.language.cantonese");
+        }
+
+        int textWidth = client.textRenderer.getWidth(buttonText);
+        int buttonWidth = textWidth + 20;
+        int buttonX = width - buttonWidth - 10;
         int buttonY = 10;
-        if (mouseX >= buttonX && mouseX <= buttonX + 90 && mouseY >= buttonY && mouseY <= buttonY + 20) {
+
+        if (mouseX >= buttonX && mouseX <= buttonX + buttonWidth && mouseY >= buttonY && mouseY <= buttonY + 20) {
             imeHandler.toggleLanguageMode();
         }
     }
