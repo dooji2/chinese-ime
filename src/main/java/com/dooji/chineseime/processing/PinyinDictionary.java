@@ -57,7 +57,7 @@ public class PinyinDictionary {
     private static void loadPinyinDictionary(String fileName, Map<String, List<String>> dictionaryMap) {
         Gson gson = new Gson();
         try {
-            Identifier resourceId = new Identifier("chineseime", fileName);
+            Identifier resourceId = Identifier.of("chineseime", fileName);
             ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
             Resource resource = resourceManager.getResource(resourceId).orElseThrow(() -> new RuntimeException("Resource not found: " + resourceId));
 
@@ -86,7 +86,7 @@ public class PinyinDictionary {
     private static void loadToneBasedPinyinDictionary(String fileName, Map<String, List<String>> dictionaryMap) {
         Gson gson = new Gson();
         try {
-            Identifier resourceId = new Identifier("chineseime", fileName);
+            Identifier resourceId = Identifier.of("chineseime", fileName);
             ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
             Resource resource = resourceManager.getResource(resourceId).orElseThrow(() -> new RuntimeException("Resource not found: " + resourceId));
 
@@ -110,7 +110,7 @@ public class PinyinDictionary {
     private static void loadFrequencyData(String fileName) {
         Gson gson = new Gson();
         try {
-            Identifier resourceId = new Identifier("chineseime", fileName);
+            Identifier resourceId = Identifier.of("chineseime", fileName);
             ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
             Resource resource = resourceManager.getResource(resourceId).orElseThrow(() -> new RuntimeException("Resource not found: " + resourceId));
 

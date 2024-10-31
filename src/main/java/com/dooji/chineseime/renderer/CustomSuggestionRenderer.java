@@ -2,8 +2,7 @@ package com.dooji.chineseime.renderer;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
@@ -33,7 +32,7 @@ public class CustomSuggestionRenderer {
         this.offset = 0;
     }
 
-    public void render(MatrixStack matrices, int x, int y, int width, int mouseX, int mouseY) {
+    public void render(DrawContext context, int x, int y, int width, int mouseX, int mouseY) {
         if (suggestions.isEmpty()) {
             return;
         }
@@ -44,7 +43,7 @@ public class CustomSuggestionRenderer {
         int totalHeight = visibleCount * 12;
 
         int startY = y;
-        DrawableHelper.fill(matrices, x, startY - totalHeight, x + width - scrollbarWidth, startY, this.color);
+        context.fill(x, startY - totalHeight, x + width - scrollbarWidth, startY, this.color);
 
         TextRenderer textRenderer = client.textRenderer;
 
@@ -59,8 +58,8 @@ public class CustomSuggestionRenderer {
                 int textColor = suggestionIndex == selectedIndex ? 0xFFFFFF : 0xAAAAAA;
                 int backgroundColor = suggestionIndex == selectedIndex ? 0x555555 : this.color;
 
-                DrawableHelper.fill(matrices, x, suggestionY, x + width - scrollbarWidth, suggestionY + 12, backgroundColor);
-                textRenderer.drawWithShadow(matrices, suggestion, x + 2, suggestionY + 2, textColor);
+                context.fill(x, suggestionY, x + width - scrollbarWidth, suggestionY + 12, backgroundColor);
+                context.drawTextWithShadow(textRenderer, suggestion, x + 2, suggestionY + 2, textColor);
             } else {
                 System.out.println("Invalid suggestion index: " + suggestionIndex);
             }
@@ -71,8 +70,8 @@ public class CustomSuggestionRenderer {
             int scrollbarHeight = Math.max((int) (((float) maxVisibleSuggestions / suggestions.size()) * totalHeight), 10);
             int scrollbarY = startY - (int) (((float) offset / (suggestions.size() - maxVisibleSuggestions)) * (totalHeight - scrollbarHeight));
 
-            DrawableHelper.fill(matrices, scrollbarX, startY - totalHeight, scrollbarX + scrollbarWidth, startY, 0x80000000);
-            DrawableHelper.fill(matrices, scrollbarX, scrollbarY - scrollbarHeight, scrollbarX + scrollbarWidth, scrollbarY, 0xFFFFFFFF);
+            context.fill(scrollbarX, startY - totalHeight, scrollbarX + scrollbarWidth, startY, 0x80000000);
+            context.fill(scrollbarX, scrollbarY - scrollbarHeight, scrollbarX + scrollbarWidth, scrollbarY, 0xFFFFFFFF);
         }
     }
 
