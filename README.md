@@ -2,7 +2,7 @@
 
 **Chinese IME** is a Minecraft mod that helps you input Chinese characters using Pinyin, with additional support for **Jyutping** input for Cantonese speakers. It supports both **Simplified** and **Traditional** Chinese characters, making it easier for players who use Chinese to communicate in-game.
 
-**Requires Fabric API. Also compatible with NeoForge, using Sintrya Connector, requires Forgified Fabric API.**
+**Requires Fabric API. Also compatible with Forge and NeoForge, using [Sinytra Connector](https://modrinth.com/mod/connector), requires [Forgified Fabric API](https://modrinth.com/mod/forgified-fabric-api).**
 
 ![Preview - Chinese Simplfiied](https://cdn.modrinth.com/data/hilng8VR/images/b04460a9516b7df0443f202c2bb7d398feee55cb.png)
 
