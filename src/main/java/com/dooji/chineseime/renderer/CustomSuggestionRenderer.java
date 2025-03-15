@@ -4,13 +4,17 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
+
 import org.lwjgl.glfw.GLFW;
+
+import com.dooji.chineseime.ChineseIME;
 
 import java.util.List;
 
 public class CustomSuggestionRenderer {
     private final MinecraftClient client;
     public List<String> suggestions;
+    
     private int selectedIndex = 0;
     private int offset = 0;
     private final int maxVisibleSuggestions;
@@ -61,7 +65,7 @@ public class CustomSuggestionRenderer {
                 context.fill(x, suggestionY, x + width - scrollbarWidth, suggestionY + 12, backgroundColor);
                 context.drawTextWithShadow(textRenderer, suggestion, x + 2, suggestionY + 2, textColor);
             } else {
-                System.out.println("Invalid suggestion index: " + suggestionIndex);
+                ChineseIME.LOGGER.warn("Invalid suggestion index: " + suggestionIndex);
             }
         }
 
@@ -84,6 +88,7 @@ public class CustomSuggestionRenderer {
         if (currentTime - lastArrowKeyTime < arrowKeyDelay) {
             return;
         }
+
         lastArrowKeyTime = currentTime;
 
         switch (keyCode) {
@@ -110,6 +115,7 @@ public class CustomSuggestionRenderer {
         if (suggestions.isEmpty()) {
             return;
         }
+
         offset = MathHelper.clamp(offset + (int) amount, 0, suggestions.size() - maxVisibleSuggestions);
     }
 
