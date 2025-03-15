@@ -15,12 +15,15 @@
 	"icon": "assets/chineseime/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"main": [
+		"client": [
 			"com.dooji.chineseime.ChineseIME"
 		]
 	},
 	"mixins": [
-		"chineseime.mixins.json"
+        {
+            "config": "chineseime.mixins.json",
+            "environment": "client"
+        }
 	],
 	"depends": {
 		"fabricloader": ">=0.16.5",
