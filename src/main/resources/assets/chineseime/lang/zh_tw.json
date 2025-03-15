@@ -1,5 +1,6 @@
 {
   "chineseime.language.simplified": "拼音（簡體）",
   "chineseime.language.traditional": "拼音（繁體）",
-  "chineseime.language.cantonese": "粵拼"
+  "chineseime.language.cantonese": "粵拼",
+  "chineseime.disabled": "輸入法已禁用"
 }
