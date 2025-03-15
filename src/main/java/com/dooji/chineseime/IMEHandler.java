@@ -4,9 +4,11 @@ import com.dooji.chineseime.processing.ConfigManager;
 import com.dooji.chineseime.processing.PinyinDictionary;
 import com.dooji.chineseime.mixin.ChatScreenAccessor;
 import com.dooji.chineseime.renderer.CustomSuggestionRenderer;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
@@ -21,6 +23,8 @@ public class IMEHandler {
     }
 
     public void showSuggestions(List<String> suggestions) {
+        if (ConfigManager.getLanguageMode() == 0) return;
+
         if (suggestionRenderer == null) {
             suggestionRenderer = new CustomSuggestionRenderer(client, suggestions, 10, 0x80000000);
         } else {
@@ -33,6 +37,8 @@ public class IMEHandler {
     }
 
     public void renderCustomSuggestions(DrawContext context) {
+        if (ConfigManager.getLanguageMode() == 0) return;
+
         if (suggestionRenderer != null && !suggestionRenderer.suggestions.isEmpty()) {
             TextFieldWidget chatField = ((ChatScreenAccessor) client.currentScreen).getChatField();
             if (chatField != null) {
@@ -87,6 +93,7 @@ public class IMEHandler {
             if (chatField != null) {
                 int chatBoxY = chatField.getY() - 12;
                 int suggestionWidth = 150;
+
                 if (suggestionRenderer.isMouseOverSuggestion(mouseX, mouseY, chatBoxY, suggestionWidth)) {
                     String selectedSuggestion = suggestionRenderer.getSuggestionAt(mouseX, mouseY, chatBoxY);
                     if (selectedSuggestion != null) {
@@ -104,6 +111,12 @@ public class IMEHandler {
     }
 
     public void updateSuggestionsBasedOnInput() {
+        if (ConfigManager.getLanguageMode() == 0) {
+            showSuggestions(List.of());
+            lastInput = "";
+            return;
+        }
+
         if (client.currentScreen instanceof net.minecraft.client.gui.screen.ChatScreen) {
             TextFieldWidget chatField = ((ChatScreenAccessor) client.currentScreen).getChatField();
             if (chatField != null) {
@@ -139,15 +152,19 @@ public class IMEHandler {
     public void toggleLanguageMode() {
         int currentMode = ConfigManager.getLanguageMode();
         int newMode;
-
-        if (currentMode == 1) {
+        
+        if (currentMode == 0) {
+            newMode = 1;
+        } else if (currentMode == 1) {
             newMode = 2;
         } else if (currentMode == 2) {
             newMode = 3;
+        } else if (currentMode == 3) {
+            newMode = 0;
         } else {
             newMode = 1;
         }
-
+        
         ConfigManager.setLanguageMode(newMode);
         PinyinDictionary.setLanguageMode(newMode);
     }

@@ -3,6 +3,7 @@ package com.dooji.chineseime.processing;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -76,6 +77,7 @@ public class PinyinDictionary {
                         dictionaryMap.computeIfAbsent(normalizedPinyin, k -> new ArrayList<>()).add(hanzi);
                     }
                 }
+
                 reader.endObject();
             }
         } catch (Exception e) {
@@ -100,6 +102,7 @@ public class PinyinDictionary {
 
                     dictionaryMap.put(pinyinWithTone, hanziList);
                 }
+
                 reader.endObject();
             }
         } catch (Exception e) {
@@ -124,6 +127,7 @@ public class PinyinDictionary {
 
                     hanziFrequencyMap.put(hanzi, frequency);
                 }
+
                 reader.endObject();
             }
         } catch (Exception e) {
@@ -155,8 +159,7 @@ public class PinyinDictionary {
         }
 
         List<String> suggestions = new ArrayList<>(uniqueSuggestions);
-        suggestions.sort((hanzi1, hanzi2) ->
-                Double.compare(hanziFrequencyMap.getOrDefault(hanzi2, 0.0), hanziFrequencyMap.getOrDefault(hanzi1, 0.0)));
+        suggestions.sort((hanzi1, hanzi2) -> Double.compare(hanziFrequencyMap.getOrDefault(hanzi2, 0.0), hanziFrequencyMap.getOrDefault(hanzi1, 0.0)));
 
         return suggestions;
     }
