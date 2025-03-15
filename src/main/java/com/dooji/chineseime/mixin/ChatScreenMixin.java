@@ -21,7 +21,7 @@ public class ChatScreenMixin {
 
     private final IMEHandler imeHandler = new IMEHandler(MinecraftClient.getInstance());
 
-    @Inject(method = "render", at = @At("HEAD"))
+    @Inject(method = "render", at = @At("TAIL"))
     private void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.currentScreen instanceof ChatScreen) {
