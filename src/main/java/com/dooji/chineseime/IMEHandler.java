@@ -52,7 +52,7 @@ public class IMEHandler {
         if (suggestionRenderer != null && !suggestionRenderer.suggestions.isEmpty()) {
             suggestionRenderer.handleInput(keyCode);
 
-            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_TAB) {
+            if (keyCode == GLFW.GLFW_KEY_TAB) {
                 String selectedSuggestion = suggestionRenderer.getSelectedSuggestion();
                 if (selectedSuggestion != null) {
                     insertSuggestionIntoChatField(selectedSuggestion);

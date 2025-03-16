@@ -40,10 +40,6 @@ public class ChineseIME implements ClientModInitializer {
 					imeHandler.handleInput(GLFW.GLFW_KEY_DOWN);
 				}
 
-				if (InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_KEY_ENTER)) {
-					imeHandler.handleInput(GLFW.GLFW_KEY_ENTER);
-				}
-
 				if (InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_KEY_TAB)) {
 					imeHandler.handleInput(GLFW.GLFW_KEY_TAB);
 				}
