@@ -17,6 +17,8 @@ public class PinyinDictionary {
     private static Map<String, List<String>> pinyinToHanziMapWithTones = new HashMap<>();
     private static Map<String, List<String>> pinyinToHanziMapNoTones = new HashMap<>();
     private static Map<String, Double> hanziFrequencyMap = new HashMap<>();
+    private static int maxSyllableLength = 6;
+    private static final int MAX_MULTI_CHAR_SUGGESTIONS = 50;
 
     static {
         int languageMode = ConfigManager.getLanguageMode();
@@ -34,6 +36,13 @@ public class PinyinDictionary {
         } else if (languageMode == 3) {
             loadPinyinDictionary("cantonese.json", pinyinToHanziMapNoTones);
             loadPinyinDictionary("cantonese-t.json", pinyinToHanziMapWithTones);
+        }
+
+        maxSyllableLength = 6;
+        for (String syllable : pinyinToHanziMapNoTones.keySet()) {
+            if (syllable.length() > maxSyllableLength) {
+                maxSyllableLength = syllable.length();
+            }
         }
     }
 
@@ -57,7 +66,7 @@ public class PinyinDictionary {
     private static void loadPinyinDictionary(String fileName, Map<String, List<String>> dictionaryMap) {
         Gson gson = new Gson();
         try {
-            Identifier resourceId = new Identifier("chineseime", fileName);
+            Identifier resourceId = Identifier.of("chineseime", fileName);
             ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
             Resource resource = resourceManager.getResource(resourceId).orElseThrow(() -> new RuntimeException("Resource not found: " + resourceId));
 
@@ -86,7 +95,7 @@ public class PinyinDictionary {
     private static void loadToneBasedPinyinDictionary(String fileName, Map<String, List<String>> dictionaryMap) {
         Gson gson = new Gson();
         try {
-            Identifier resourceId = new Identifier("chineseime", fileName);
+            Identifier resourceId = Identifier.of("chineseime", fileName);
             ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
             Resource resource = resourceManager.getResource(resourceId).orElseThrow(() -> new RuntimeException("Resource not found: " + resourceId));
 
@@ -110,7 +119,7 @@ public class PinyinDictionary {
     private static void loadFrequencyData(String fileName) {
         Gson gson = new Gson();
         try {
-            Identifier resourceId = new Identifier("chineseime", fileName);
+            Identifier resourceId = Identifier.of("chineseime", fileName);
             ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
             Resource resource = resourceManager.getResource(resourceId).orElseThrow(() -> new RuntimeException("Resource not found: " + resourceId));
 
@@ -158,6 +167,130 @@ public class PinyinDictionary {
         suggestions.sort((hanzi1, hanzi2) ->
                 Double.compare(hanziFrequencyMap.getOrDefault(hanzi2, 0.0), hanziFrequencyMap.getOrDefault(hanzi1, 0.0)));
 
+        if (suggestions.isEmpty() && !input.matches(".*\\d$") && input.length() > 1) {
+            List<String> multiCharSuggestions = getMultiCharSuggestions(normalizeInput(input, languageMode));
+            if (!multiCharSuggestions.isEmpty()) {
+                return multiCharSuggestions;
+            }
+        }
+
         return suggestions;
+    }
+
+    private static List<String> getMultiCharSuggestions(String input) {
+        List<String> syllables = segmentPinyin(input);
+        if (syllables.size() <= 1) {
+            return Collections.emptyList();
+        }
+
+        StringBuilder prefixBuilder = new StringBuilder();
+        for (int i = 0; i < syllables.size() - 1; i++) {
+            List<String> candidates = pinyinToHanziMapNoTones.get(syllables.get(i));
+            if (candidates == null || candidates.isEmpty()) {
+                return Collections.emptyList();
+            }
+            prefixBuilder.append(bestHanzi(candidates));
+        }
+        String prefix = prefixBuilder.toString();
+
+        String lastSyllable = syllables.get(syllables.size() - 1);
+        Set<String> lastCandidates = new HashSet<>();
+        List<String> exactMatch = pinyinToHanziMapNoTones.get(lastSyllable);
+        if (exactMatch != null) {
+            lastCandidates.addAll(exactMatch);
+        } else {
+            for (Map.Entry<String, List<String>> entry : pinyinToHanziMapNoTones.entrySet()) {
+                if (entry.getKey().startsWith(lastSyllable)) {
+                    lastCandidates.addAll(entry.getValue());
+                }
+            }
+        }
+
+        if (lastCandidates.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> sortedLastCandidates = new ArrayList<>(lastCandidates);
+        sortedLastCandidates.sort((hanzi1, hanzi2) ->
+                Double.compare(hanziFrequencyMap.getOrDefault(hanzi2, 0.0), hanziFrequencyMap.getOrDefault(hanzi1, 0.0)));
+
+        List<String> suggestions = new ArrayList<>();
+        for (String hanzi : sortedLastCandidates) {
+            suggestions.add(prefix + hanzi);
+            if (suggestions.size() >= MAX_MULTI_CHAR_SUGGESTIONS) {
+                break;
+            }
+        }
+
+        return suggestions;
+    }
+
+    private static String bestHanzi(List<String> candidates) {
+        String best = candidates.get(0);
+        double bestFreq = hanziFrequencyMap.getOrDefault(best, 0.0);
+        for (String candidate : candidates) {
+            double freq = hanziFrequencyMap.getOrDefault(candidate, 0.0);
+            if (freq > bestFreq) {
+                best = candidate;
+                bestFreq = freq;
+            }
+        }
+        return best;
+    }
+
+    private static List<String> segmentPinyin(String input) {
+        Map<Integer, List<String>> memo = new HashMap<>();
+        List<String> full = segmentFull(input, 0, memo);
+        if (full != null) {
+            return full;
+        }
+
+        List<String> result = new ArrayList<>();
+        int i = 0;
+        int n = input.length();
+        while (i < n) {
+            int matchLen = -1;
+            int maxLen = Math.min(maxSyllableLength, n - i);
+            for (int len = maxLen; len >= 1; len--) {
+                if (pinyinToHanziMapNoTones.containsKey(input.substring(i, i + len))) {
+                    matchLen = len;
+                    break;
+                }
+            }
+            if (matchLen == -1) {
+                result.add(input.substring(i));
+                break;
+            }
+            result.add(input.substring(i, i + matchLen));
+            i += matchLen;
+        }
+        return result;
+    }
+
+    private static List<String> segmentFull(String input, int start, Map<Integer, List<String>> memo) {
+        if (start == input.length()) {
+            return new ArrayList<>();
+        }
+        if (memo.containsKey(start)) {
+            return memo.get(start);
+        }
+
+        int maxLen = Math.min(maxSyllableLength, input.length() - start);
+        for (int len = maxLen; len >= 1; len--) {
+            String candidate = input.substring(start, start + len);
+            if (pinyinToHanziMapNoTones.containsKey(candidate)) {
+                List<String> rest = segmentFull(input, start + len, memo);
+                if (rest != null) {
+                    List<String> result = new ArrayList<>();
+                    result.add(candidate);
+                    result.addAll(rest);
+                    memo.put(start, result);
+                    return result;
+                }
+            }
+        }
+
+        memo.put(start, null);
+        return null;
     }
 }

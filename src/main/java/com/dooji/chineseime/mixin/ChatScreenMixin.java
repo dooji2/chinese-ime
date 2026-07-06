@@ -3,10 +3,9 @@ package com.dooji.chineseime.mixin;
 import com.dooji.chineseime.processing.ConfigManager;
 import com.dooji.chineseime.IMEHandler;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.util.math.MatrixStack;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,10 +19,10 @@ public class ChatScreenMixin {
     private final IMEHandler imeHandler = new IMEHandler(MinecraftClient.getInstance());
 
     @Inject(method = "render", at = @At("HEAD"))
-    private void onRender(MatrixStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.currentScreen instanceof ChatScreen) {
-            imeHandler.renderCustomSuggestions(matrices);
+            imeHandler.renderCustomSuggestions(context);
 
             int width = client.getWindow().getScaledWidth();
 
@@ -43,12 +42,12 @@ public class ChatScreenMixin {
             int buttonX = width - buttonWidth - 10;
             int buttonY = 10;
 
-            DrawableHelper.fill(matrices, buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, 0x80000000);
+            context.fill(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, 0x80000000);
 
             int textX = buttonX + (buttonWidth / 2) - (textWidth / 2);
             int textY = buttonY + (buttonHeight / 2) - (client.textRenderer.fontHeight / 2);
 
-            client.textRenderer.drawWithShadow(matrices, buttonText, textX, textY, 0xFFFFFF);
+            context.drawTextWithShadow(client.textRenderer, buttonText, textX, textY, 0xFFFFFF);
         }
     }
 
@@ -80,8 +79,8 @@ public class ChatScreenMixin {
     }
 
     @Inject(method = "mouseScrolled", at = @At("HEAD"))
-    private void onMouseScrolled(double mouseX, double mouseY, double amount, CallbackInfoReturnable<Boolean> cir) {
-        imeHandler.handleMouseScroll(amount);
+    private void onMouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount, CallbackInfoReturnable<Boolean> cir) {
+        imeHandler.handleMouseScroll(verticalAmount);
     }
 
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)

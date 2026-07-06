@@ -5,7 +5,7 @@ import com.dooji.chineseime.processing.PinyinDictionary;
 import com.dooji.chineseime.mixin.ChatScreenAccessor;
 import com.dooji.chineseime.renderer.CustomSuggestionRenderer;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import org.lwjgl.glfw.GLFW;
 
@@ -32,12 +32,12 @@ public class IMEHandler {
         return suggestionRenderer != null && !suggestionRenderer.suggestions.isEmpty();
     }
 
-    public void renderCustomSuggestions(MatrixStack matrices) {
+    public void renderCustomSuggestions(DrawContext context) {
         if (suggestionRenderer != null && !suggestionRenderer.suggestions.isEmpty()) {
             TextFieldWidget chatField = ((ChatScreenAccessor) client.currentScreen).getChatField();
             if (chatField != null) {
-                int chatBoxY = chatField.y - 6;
-                suggestionRenderer.render(matrices, 4, chatBoxY, 150, 0, 0);
+                int chatBoxY = chatField.getY() - 6;
+                suggestionRenderer.render(context, 4, chatBoxY, 150, 0, 0);
             }
         }
     }
@@ -85,7 +85,7 @@ public class IMEHandler {
         if (suggestionRenderer != null) {
             TextFieldWidget chatField = ((ChatScreenAccessor) client.currentScreen).getChatField();
             if (chatField != null) {
-                int chatBoxY = chatField.y - 12;
+                int chatBoxY = chatField.getY() - 12;
                 int suggestionWidth = 150;
                 if (suggestionRenderer.isMouseOverSuggestion(mouseX, mouseY, chatBoxY, suggestionWidth)) {
                     String selectedSuggestion = suggestionRenderer.getSuggestionAt(mouseX, mouseY, chatBoxY);
