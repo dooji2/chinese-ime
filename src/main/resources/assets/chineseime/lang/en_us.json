@@ -1,5 +1,6 @@
 {
   "chineseime.language.simplified": "Pinyin (Simplified)",
   "chineseime.language.traditional": "Pinyin (Traditional)",
-  "chineseime.language.cantonese": "Jyutping"
+  "chineseime.language.cantonese": "Jyutping",
+  "chineseime.disabled": "IME Disabled"
 }

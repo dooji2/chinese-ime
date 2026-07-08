@@ -2,11 +2,13 @@ package com.dooji.chineseime.mixin;
 
 import com.dooji.chineseime.processing.ConfigManager;
 import com.dooji.chineseime.IMEHandler;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.resource.language.I18n;
 import org.lwjgl.glfw.GLFW;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,7 +30,10 @@ public class ChatScreenMixin {
 
             String buttonText = "";
             int languageMode = ConfigManager.getLanguageMode();
-            if (languageMode == 1) {
+
+            if (languageMode == 0) {
+                buttonText = I18n.translate("chineseime.disabled");
+            } else if (languageMode == 1) {
                 buttonText = I18n.translate("chineseime.language.simplified");
             } else if (languageMode == 2) {
                 buttonText = I18n.translate("chineseime.language.traditional");
@@ -60,7 +65,10 @@ public class ChatScreenMixin {
 
         String buttonText = "";
         int languageMode = ConfigManager.getLanguageMode();
-        if (languageMode == 1) {
+
+        if (languageMode == 0) {
+            buttonText = I18n.translate("chineseime.disabled");
+        } else if (languageMode == 1) {
             buttonText = I18n.translate("chineseime.language.simplified");
         } else if (languageMode == 2) {
             buttonText = I18n.translate("chineseime.language.traditional");
@@ -86,7 +94,7 @@ public class ChatScreenMixin {
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
     private void onKeyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
         if (imeHandler.isSuggestionListActive()) {
-            if (keyCode == GLFW.GLFW_KEY_UP || keyCode == GLFW.GLFW_KEY_DOWN || keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_TAB) {
+            if (keyCode == GLFW.GLFW_KEY_UP || keyCode == GLFW.GLFW_KEY_DOWN || keyCode == GLFW.GLFW_KEY_TAB) {
                 imeHandler.handleInput(keyCode);
                 cir.setReturnValue(true);
             }
