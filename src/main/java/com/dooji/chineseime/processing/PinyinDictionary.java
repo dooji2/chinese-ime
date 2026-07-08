@@ -17,13 +17,17 @@ public class PinyinDictionary {
     private static Map<String, List<String>> pinyinToHanziMapWithTones = new HashMap<>();
     private static Map<String, List<String>> pinyinToHanziMapNoTones = new HashMap<>();
     private static Map<String, Double> hanziFrequencyMap = new HashMap<>();
+    private static Map<String, List<String>> pinyinToWordMap = new HashMap<>();
+    private static Map<String, Double> wordFrequencyMap = new HashMap<>();
     private static int maxSyllableLength = 6;
     private static final int MAX_MULTI_CHAR_SUGGESTIONS = 50;
+    private static final int MAX_WORD_SUGGESTIONS = 30;
 
     static {
         int languageMode = ConfigManager.getLanguageMode();
         loadDictionaries(languageMode);
         loadFrequencies(languageMode);
+        loadWordDictionary(languageMode);
     }
 
     private static void loadDictionaries(int languageMode) {
@@ -48,9 +52,16 @@ public class PinyinDictionary {
 
     private static void loadFrequencies(int languageMode) {
         if (languageMode == 1 || languageMode == 2) {
-            loadFrequencyData("frequency.json");
+            loadFrequencyData("frequency.json", hanziFrequencyMap);
         } else if (languageMode == 3) {
-            loadFrequencyData("cantonese-f.json");
+            loadFrequencyData("cantonese-f.json", hanziFrequencyMap);
+        }
+    }
+
+    private static void loadWordDictionary(int languageMode) {
+        if (languageMode == 1) {
+            loadPinyinDictionary("simplified-words.json", pinyinToWordMap);
+            loadFrequencyData("word-frequency.json", wordFrequencyMap);
         }
     }
 
@@ -58,9 +69,12 @@ public class PinyinDictionary {
         pinyinToHanziMapWithTones.clear();
         pinyinToHanziMapNoTones.clear();
         hanziFrequencyMap.clear();
+        pinyinToWordMap.clear();
+        wordFrequencyMap.clear();
 
         loadDictionaries(languageMode);
         loadFrequencies(languageMode);
+        loadWordDictionary(languageMode);
     }
 
     private static void loadPinyinDictionary(String fileName, Map<String, List<String>> dictionaryMap) {
@@ -116,7 +130,7 @@ public class PinyinDictionary {
         }
     }
 
-    private static void loadFrequencyData(String fileName) {
+    private static void loadFrequencyData(String fileName, Map<String, Double> targetMap) {
         Gson gson = new Gson();
         try {
             Identifier resourceId = Identifier.of("chineseime", fileName);
@@ -128,10 +142,10 @@ public class PinyinDictionary {
 
                 reader.beginObject();
                 while (reader.hasNext()) {
-                    String hanzi = reader.nextName();
+                    String key = reader.nextName();
                     Double frequency = gson.fromJson(reader, Double.class);
 
-                    hanziFrequencyMap.put(hanzi, frequency);
+                    targetMap.put(key, frequency);
                 }
                 reader.endObject();
             }
@@ -168,9 +182,47 @@ public class PinyinDictionary {
                 Double.compare(hanziFrequencyMap.getOrDefault(hanzi2, 0.0), hanziFrequencyMap.getOrDefault(hanzi1, 0.0)));
 
         if (suggestions.isEmpty() && !input.matches(".*\\d$") && input.length() > 1) {
-            List<String> multiCharSuggestions = getMultiCharSuggestions(normalizeInput(input, languageMode));
+            String normalizedInput = normalizeInput(input, languageMode);
+
+            List<String> wordSuggestions = getWordSuggestions(normalizedInput);
+            if (!wordSuggestions.isEmpty()) {
+                return wordSuggestions;
+            }
+
+            List<String> multiCharSuggestions = getMultiCharSuggestions(normalizedInput);
             if (!multiCharSuggestions.isEmpty()) {
                 return multiCharSuggestions;
+            }
+        }
+
+        return suggestions;
+    }
+
+    private static List<String> getWordSuggestions(String input) {
+        if (pinyinToWordMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> exactMatches = new ArrayList<>(pinyinToWordMap.getOrDefault(input, Collections.emptyList()));
+        exactMatches.sort((word1, word2) ->
+                Double.compare(wordFrequencyMap.getOrDefault(word2, 0.0), wordFrequencyMap.getOrDefault(word1, 0.0)));
+
+        List<String> prefixMatches = new ArrayList<>();
+        for (Map.Entry<String, List<String>> entry : pinyinToWordMap.entrySet()) {
+            if (entry.getKey().length() > input.length() && entry.getKey().startsWith(input)) {
+                prefixMatches.addAll(entry.getValue());
+            }
+        }
+        prefixMatches.sort((word1, word2) ->
+                Double.compare(wordFrequencyMap.getOrDefault(word2, 0.0), wordFrequencyMap.getOrDefault(word1, 0.0)));
+
+        List<String> suggestions = new ArrayList<>(exactMatches);
+        for (String word : prefixMatches) {
+            if (suggestions.size() >= MAX_WORD_SUGGESTIONS) {
+                break;
+            }
+            if (!suggestions.contains(word)) {
+                suggestions.add(word);
             }
         }
 
