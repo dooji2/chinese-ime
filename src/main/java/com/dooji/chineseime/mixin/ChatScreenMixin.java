@@ -7,7 +7,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.resource.language.I18n;
-
 import org.lwjgl.glfw.GLFW;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,10 +24,7 @@ public class ChatScreenMixin {
     private void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.currentScreen instanceof ChatScreen) {
-            context.getMatrices().push();
-            context.getMatrices().translate(0.0F, 0.0F, 100.0F);
             imeHandler.renderCustomSuggestions(context);
-            context.getMatrices().pop();
 
             int width = client.getWindow().getScaledWidth();
 

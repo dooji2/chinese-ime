@@ -43,7 +43,10 @@ public class IMEHandler {
             TextFieldWidget chatField = ((ChatScreenAccessor) client.currentScreen).getChatField();
             if (chatField != null) {
                 int chatBoxY = chatField.getY() - 6;
+                context.getMatrices().push();
+                context.getMatrices().translate(0.0f, 0.0f, 200.0f);
                 suggestionRenderer.render(context, 4, chatBoxY, 150, 0, 0);
+                context.getMatrices().pop();
             }
         }
     }
